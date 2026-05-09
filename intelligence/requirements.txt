@@ -1,0 +1,10 @@
+# Green-Ledger Intelligence Service
+# TimesFM 2.5 (solar forecasting) + Graphify (knowledge graph matching)
+
+fastapi==0.115.12
+uvicorn[standard]==0.34.3
+torch>=2.0.0
+transformers>=4.45.0
+graphifyy>=0.7.0
+pydantic>=2.0.0
+numpy>=1.24.0

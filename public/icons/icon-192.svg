@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="192" height="192" viewBox="0 0 192 192">
+  <rect width="192" height="192" fill="#0A0E1A" rx="24"/>
+  <g transform="translate(48, 48)">
+    <!-- Sun body -->
+    <rect x="32" y="32" width="32" height="32" fill="#F97316"/>
+    <!-- Sun rays -->
+    <rect x="44" y="16" width="8" height="12" fill="#FBBF24"/>
+    <rect x="44" y="68" width="8" height="12" fill="#FBBF24"/>
+    <rect x="16" y="44" width="12" height="8" fill="#FBBF24"/>
+    <rect x="68" y="44" width="12" height="8" fill="#FBBF24"/>
+    <!-- Diagonal rays -->
+    <rect x="22" y="22" width="8" height="8" fill="#FBBF24"/>
+    <rect x="66" y="22" width="8" height="8" fill="#FBBF24"/>
+    <rect x="22" y="66" width="8" height="8" fill="#FBBF24"/>
+    <rect x="66" y="66" width="8" height="8" fill="#FBBF24"/>
+  </g>
+</svg>

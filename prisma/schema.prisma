@@ -1,0 +1,274 @@
+// ═══════════════════════════════════════════════
+// Green-Ledger — Prisma Schema (Documentation Only)
+// This schema documents the data model but is NOT active.
+// Source: 003-DATA_MODEL.md §2
+// ═══════════════════════════════════════════════
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────
+// USUARIOS Y NODOS DE LA MICRO-RED
+// ─────────────────────────────────────────
+
+model User {
+  id              String    @id @default(cuid())
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  name            String
+  email           String    @unique
+  phone           String?
+
+  walletAddress   String    @unique
+  walletType      WalletType @default(EMBEDDED)
+
+  nodeType        NodeType
+
+  lat             Float
+  lng             Float
+  neighborhood    String
+
+  prosumerProfile ProsumerProfile?
+  buyerProfile    BuyerProfile?
+  transactions    Transaction[]
+  sessions        SoleiSession[]
+}
+
+enum NodeType {
+  PROSUMER
+  BUYER
+  HYBRID
+}
+
+enum WalletType {
+  EMBEDDED
+  EXTERNAL
+}
+
+// ─────────────────────────────────────────
+// PERFIL PROSUMIDOR
+// ─────────────────────────────────────────
+
+model ProsumerProfile {
+  id              String    @id @default(cuid())
+  userId          String    @unique
+  user            User      @relation(fields: [userId], references: [id])
+
+  panelCapacityKw Float
+  inverterBrand   String?
+  installDate     DateTime?
+
+  meterId         String    @unique
+  meterType       MeterType
+  meterSource     MeterSource @default(MOCK)
+
+  minPriceUsdc    Float     @default(0.06)
+  maxDailyKwh     Float?
+  autoApprove     Boolean   @default(false)
+
+  totalKwhSold    Float     @default(0)
+  totalUsdcEarned Float     @default(0)
+  totalTrades     Int       @default(0)
+
+  meterReadings   MeterReading[]
+}
+
+enum MeterType {
+  SMART_BIDIRECTIONAL
+  LEGACY_NET_METERING
+  SIMULATED
+}
+
+enum MeterSource {
+  MQTT_LIVE
+  API_CNFL
+  MOCK
+}
+
+// ─────────────────────────────────────────
+// PERFIL COMPRADOR
+// ─────────────────────────────────────────
+
+model BuyerProfile {
+  id              String    @id @default(cuid())
+  userId          String    @unique
+  user            User      @relation(fields: [userId], references: [id])
+
+  maxPriceUsdc    Float     @default(0.12)
+  preferredRadius Float     @default(500)
+  autoApprove     Boolean   @default(true)
+
+  escrowBalanceUsdc Float   @default(0)
+
+  totalKwhBought  Float     @default(0)
+  totalUsdcSpent  Float     @default(0)
+  totalTrades     Int       @default(0)
+}
+
+// ─────────────────────────────────────────
+// LECTURAS DEL MEDIDOR
+// ─────────────────────────────────────────
+
+model MeterReading {
+  id              String    @id @default(cuid())
+  timestamp       DateTime  @default(now())
+
+  prosumerProfile   ProsumerProfile @relation(fields: [prosumerProfileId], references: [id])
+  prosumerProfileId String
+
+  generatedKwh    Float
+  consumedKwh     Float
+  surplusKwh      Float
+
+  intervalMinutes Int       @default(15)
+  source          MeterSource @default(MOCK)
+  rawPayload      Json?
+
+  @@index([prosumerProfileId, timestamp])
+}
+
+// ─────────────────────────────────────────
+// PROPUESTAS DE VENTA
+// ─────────────────────────────────────────
+
+model TradeProposal {
+  id              String          @id @default(cuid())
+  createdAt       DateTime        @default(now())
+  expiresAt       DateTime
+
+  prosumerId      String
+  buyerId         String
+
+  kwhAmount       Float
+  pricePerKwhUsdc Float
+  totalUsdc       Float
+  feeUsdc         Float
+
+  status          ProposalStatus  @default(PENDING)
+  rejectionReason String?
+
+  vaultPda        String?
+  txHash          String?
+
+  transaction     Transaction?
+  soleiSession    SoleiSession?   @relation(fields: [sessionId], references: [id])
+  sessionId       String?
+}
+
+enum ProposalStatus {
+  PENDING
+  AUTHORIZED
+  ON_CHAIN
+  DELIVERING
+  COMPLETED
+  CANCELLED
+  EXPIRED
+}
+
+// ─────────────────────────────────────────
+// TRANSACCIONES
+// ─────────────────────────────────────────
+
+model Transaction {
+  id              String          @id @default(cuid())
+  createdAt       DateTime        @default(now())
+  completedAt     DateTime?
+
+  proposalId      String          @unique
+  proposal        TradeProposal   @relation(fields: [proposalId], references: [id])
+
+  prosumerId      String
+  buyerId         String
+  user            User            @relation(fields: [prosumerId], references: [id])
+
+  kwhDelivered    Float
+  pricePerKwhUsdc Float
+  grossUsdc       Float
+  feeUsdc         Float
+  netUsdc         Float
+
+  vaultPda        String
+  initTxHash      String?
+  lockTxHash      String?
+  confirmTxHash   String?
+  feeTxHash       String?
+  network         SolanaNetwork   @default(DEVNET)
+
+  status          TransactionStatus @default(PENDING)
+
+  co2AvoidedKg    Float?
+
+  @@index([prosumerId, createdAt])
+  @@index([buyerId, createdAt])
+}
+
+enum TransactionStatus {
+  PENDING
+  CONFIRMED
+  FAILED
+  REFUNDED
+}
+
+enum SolanaNetwork {
+  DEVNET
+  MAINNET
+}
+
+// ─────────────────────────────────────────
+// SESIONES DE SOLEI
+// ─────────────────────────────────────────
+
+model SoleiSession {
+  id              String    @id @default(cuid())
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  userId          String
+  user            User      @relation(fields: [userId], references: [id])
+
+  messages        Json      @default("[]")
+  meterContextSnapshot Json?
+
+  activeProposalId String?
+  proposals        TradeProposal[]
+
+  totalMessages   Int       @default(0)
+  lastActivity    DateTime  @default(now())
+
+  @@index([userId, lastActivity])
+}
+
+// ─────────────────────────────────────────
+// NODOS DE LA MICRO-RED
+// ─────────────────────────────────────────
+
+model MicroGridNode {
+  id              String    @id @default(cuid())
+  userId          String    @unique
+
+  lat             Float
+  lng             Float
+  neighborhood    String
+
+  status          NodeStatus @default(OFFLINE)
+  currentKwhAvailable Float?
+
+  displayName     String
+  nodeType        NodeType
+
+  updatedAt       DateTime  @updatedAt
+}
+
+enum NodeStatus {
+  OFFLINE
+  AVAILABLE
+  TRADING
+  FULL
+}

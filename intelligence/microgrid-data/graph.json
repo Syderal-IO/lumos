@@ -1,0 +1,190 @@
+{
+  "nodes": [
+    {
+      "id": "prosumer_001",
+      "type": "prosumer",
+      "label": "Casa Solar #1",
+      "location": { "lat": 9.9341, "lng": -84.0877 },
+      "neighborhood": "Escazú",
+      "capacity_kw": 5.0,
+      "surplus_kwh_range": [8, 12],
+      "min_price_usdc": 0.06,
+      "total_trades": 45,
+      "panel_type": "Monocristalino 400W",
+      "inverter": "Huawei SUN2000"
+    },
+    {
+      "id": "prosumer_002",
+      "type": "prosumer",
+      "label": "Casa Solar #2",
+      "location": { "lat": 9.9367, "lng": -84.0782 },
+      "neighborhood": "Sabana",
+      "capacity_kw": 4.2,
+      "surplus_kwh_range": [5, 8],
+      "min_price_usdc": 0.07,
+      "total_trades": 28,
+      "panel_type": "Policristalino 330W",
+      "inverter": "SMA Sunny Boy"
+    },
+    {
+      "id": "prosumer_003",
+      "type": "prosumer",
+      "label": "Casa Solar #3",
+      "location": { "lat": 9.9531, "lng": -84.0423 },
+      "neighborhood": "Moravia",
+      "capacity_kw": 6.0,
+      "surplus_kwh_range": [12, 16],
+      "min_price_usdc": 0.05,
+      "total_trades": 67,
+      "panel_type": "Bifacial 450W",
+      "inverter": "Fronius Primo"
+    },
+    {
+      "id": "prosumer_004",
+      "type": "prosumer",
+      "label": "Casa Solar #4",
+      "location": { "lat": 9.9184, "lng": -84.0375 },
+      "neighborhood": "Curridabat",
+      "capacity_kw": 3.8,
+      "surplus_kwh_range": [4, 7],
+      "min_price_usdc": 0.08,
+      "total_trades": 19,
+      "panel_type": "Monocristalino 380W",
+      "inverter": "Huawei SUN2000"
+    },
+    {
+      "id": "prosumer_005",
+      "type": "prosumer",
+      "label": "Casa Solar #5",
+      "location": { "lat": 9.9282, "lng": -84.1261 },
+      "neighborhood": "Santa Ana",
+      "capacity_kw": 7.5,
+      "surplus_kwh_range": [15, 20],
+      "min_price_usdc": 0.06,
+      "total_trades": 52,
+      "panel_type": "Monocristalino PERC 500W",
+      "inverter": "SolarEdge SE7600"
+    },
+    {
+      "id": "buyer_001",
+      "type": "buyer",
+      "label": "Vecino A",
+      "location": { "lat": 9.9335, "lng": -84.0865 },
+      "neighborhood": "Escazú",
+      "consumption_kwh_range": [12, 15],
+      "peak_demand_kwh": [3, 5],
+      "max_price_usdc": 0.10,
+      "total_trades": 38,
+      "preferred_hours": "9am-3pm"
+    },
+    {
+      "id": "buyer_002",
+      "type": "buyer",
+      "label": "Vecino B",
+      "location": { "lat": 9.9358, "lng": -84.0795 },
+      "neighborhood": "Sabana",
+      "consumption_kwh_range": [18, 22],
+      "peak_demand_kwh": [5, 7],
+      "max_price_usdc": 0.11,
+      "total_trades": 25,
+      "preferred_hours": "8am-4pm"
+    },
+    {
+      "id": "buyer_003",
+      "type": "buyer",
+      "label": "Vecino C",
+      "location": { "lat": 9.9520, "lng": -84.0440 },
+      "neighborhood": "Moravia",
+      "consumption_kwh_range": [10, 13],
+      "peak_demand_kwh": [2, 4],
+      "max_price_usdc": 0.09,
+      "total_trades": 55,
+      "preferred_hours": "10am-2pm"
+    },
+    {
+      "id": "buyer_004",
+      "type": "buyer",
+      "label": "Vecino D",
+      "location": { "lat": 9.9195, "lng": -84.0390 },
+      "neighborhood": "Curridabat",
+      "consumption_kwh_range": [14, 17],
+      "peak_demand_kwh": [4, 6],
+      "max_price_usdc": 0.10,
+      "total_trades": 17,
+      "preferred_hours": "9am-5pm"
+    }
+  ],
+  "edges": [
+    {
+      "from": "prosumer_001",
+      "to": "buyer_001",
+      "type": "frequent_trade",
+      "distance_m": 150,
+      "total_trades": 38,
+      "weight": 0.95
+    },
+    {
+      "from": "prosumer_001",
+      "to": "buyer_002",
+      "type": "occasional_trade",
+      "distance_m": 1200,
+      "total_trades": 7,
+      "weight": 0.3
+    },
+    {
+      "from": "prosumer_002",
+      "to": "buyer_002",
+      "type": "frequent_trade",
+      "distance_m": 200,
+      "total_trades": 25,
+      "weight": 0.85
+    },
+    {
+      "from": "prosumer_003",
+      "to": "buyer_003",
+      "type": "frequent_trade",
+      "distance_m": 220,
+      "total_trades": 55,
+      "weight": 0.97
+    },
+    {
+      "from": "prosumer_004",
+      "to": "buyer_004",
+      "type": "exclusive_trade",
+      "distance_m": 180,
+      "total_trades": 17,
+      "weight": 1.0
+    },
+    {
+      "from": "prosumer_005",
+      "to": "buyer_001",
+      "type": "potential",
+      "distance_m": 4500,
+      "total_trades": 0,
+      "weight": 0.1
+    },
+    {
+      "from": "prosumer_005",
+      "to": "buyer_002",
+      "type": "potential",
+      "distance_m": 5200,
+      "total_trades": 0,
+      "weight": 0.08
+    },
+    {
+      "from": "prosumer_001",
+      "to": "prosumer_002",
+      "type": "competition",
+      "weight": 0.6,
+      "notes": "Compete for buyer_002 by price"
+    }
+  ],
+  "metadata": {
+    "generated_at": "2026-05-06T20:50:00Z",
+    "source": "microgrid-data/prosumers.md + buyers.md",
+    "total_nodes": 9,
+    "total_edges": 8,
+    "region": "Gran Área Metropolitana, Costa Rica",
+    "cnfl_rate_usd_per_kwh": 0.017
+  }
+}
