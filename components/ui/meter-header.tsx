@@ -100,7 +100,9 @@ export default function MeterHeader() {
             >
               {surplus.toFixed(1)}
             </span>
-            <span className="text-[9px] opacity-60 font-pixel">{t("header.surplus")}</span>
+            <span className="text-[9px] opacity-60 font-pixel" suppressHydrationWarning>
+              {t("header.surplus")}
+            </span>
           </div>
         </div>
       </div>

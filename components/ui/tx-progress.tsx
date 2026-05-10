@@ -2,20 +2,12 @@
 
 import { useState, useEffect, useRef } from "react";
 import { LockIcon, CoinIcon, BoltIcon, SatelliteIcon, CheckIcon, PartyIcon } from "@/components/ui/pixel-icons";
+import { useTranslation } from "@/lib/i18n";
 
 interface TxProgressProps {
   isActive: boolean;
   onComplete?: () => void;
 }
-
-const STAGES = [
-  { label: "Iniciando escrow", percent: 15, Icon: LockIcon },
-  { label: "Bloqueando fondos", percent: 35, Icon: CoinIcon },
-  { label: "Transfiriendo", percent: 55, Icon: BoltIcon },
-  { label: "Leyendo medidor", percent: 75, Icon: SatelliteIcon },
-  { label: "Confirmando", percent: 90, Icon: CheckIcon },
-  { label: "Pago acreditado", percent: 100, Icon: PartyIcon },
-] as const;
 
 /**
  * Transaction progress — Pixel art styled with stepped progress blocks.
@@ -24,6 +16,17 @@ export default function TxProgress({ isActive, onComplete }: TxProgressProps) {
   const [currentStage, setCurrentStage] = useState(0);
   const [percent, setPercent] = useState(0);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const { t } = useTranslation();
+
+  const STAGES = [
+    { label: t("trade.processing_stage_1") || "Iniciando escrow", percent: 15, Icon: LockIcon },
+    { label: t("trade.processing_stage_2") || "Bloqueando fondos", percent: 35, Icon: CoinIcon },
+    { label: t("trade.processing_stage_3") || "Transfiriendo", percent: 55, Icon: BoltIcon },
+    { label: t("trade.processing_stage_4") || "Leyendo medidor", percent: 75, Icon: SatelliteIcon },
+    { label: t("trade.processing_stage_5") || "Confirmando", percent: 90, Icon: CheckIcon },
+    { label: t("trade.processing_stage_6") || "Pago acreditado", percent: 100, Icon: PartyIcon },
+  ] as const;
+
 
   useEffect(() => {
     if (!isActive) {

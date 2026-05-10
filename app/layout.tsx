@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { DM_Serif_Display, DM_Sans, JetBrains_Mono, Press_Start_2P } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 import ClientProviders from "@/components/ui/client-providers";
 import SplashScreen from "@/components/ui/splash-screen";
@@ -36,7 +37,7 @@ const pressStart2P = Press_Start_2P({
 export const metadata: Metadata = {
   title: "Lumos | Mercado Solar P2P",
   description:
-    "Vende tu excedente solar directamente a tus vecinos. Pagos instantáneos, sin intermediarios.",
+    "Compra o vende energía solar directamente con tus vecinos. Pagos instantáneos, sin intermediarios.",
   keywords: ["energía solar", "mercado P2P", "Costa Rica", "sostenibilidad", "Solana", "blockchain"],
   manifest: "/manifest.json",
   themeColor: "#F97316",
@@ -69,7 +70,9 @@ export default function RootLayout({
           </PageTransition>
         </ClientProviders>
         {/* PWA Service Worker registration */}
-        <script
+        <Script
+          id="sw-register"
+          strategy="afterInteractive"
           dangerouslySetInnerHTML={{
             __html: `
               if ('serviceWorker' in navigator) {
