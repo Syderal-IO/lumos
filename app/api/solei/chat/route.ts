@@ -10,36 +10,20 @@ import { generateMeterReading, generateForecast, DEMO_PROSUMER, PROTOCOL_FEE_RAT
 import { findBestBuyer } from "@/lib/intelligence";
 import type { MeterContext, SoleiMessage, TradeProposal, SSEEvent } from "@/lib/types";
 
-// ─── Session Management ───
-// In production, use Redis/Upstash for persistent, serverless-safe sessions.
-// For now, we use a Map with a simple TTL-based cleanup logic to prevent memory leaks.
+// ─── In-Memory Sessions ───
 
-interface ChatSession {
-  messages: Array<{ role: "user" | "assistant"; content: string }>;
-  activeProposal: TradeProposal | null;
-  meterContext: MeterContext | null;
-  meterHistory: number[];
-  lastBuyerMatch: { buyer_name: string; neighborhood: string; demand_kwh: number } | null;
-  lastAccess: number;
-}
-
-const sessions = new Map<string, ChatSession>();
-const SESSION_TTL = 3600 * 1000; // 1 hour
-const MAX_SESSIONS = 100;
-
-function cleanupSessions() {
-  const now = Date.now();
-  if (sessions.size > MAX_SESSIONS) {
-    for (const [id, session] of sessions.entries()) {
-      if (now - session.lastAccess > SESSION_TTL) {
-        sessions.delete(id);
-      }
-    }
+const sessions = new Map<
+  string,
+  {
+    messages: Array<{ role: "user" | "assistant"; content: string }>;
+    activeProposal: TradeProposal | null;
+    meterContext: MeterContext | null;
+    meterHistory: number[]; // historical generation readings for forecast calibration
+    lastBuyerMatch: { buyer_name: string; neighborhood: string; demand_kwh: number } | null;
   }
-}
+>();
 
 // ─── SSE Helpers ───
-
 
 function encodeSSE(event: SSEEvent): string {
   return `data: ${JSON.stringify(event)}\n\n`;
@@ -65,7 +49,6 @@ export async function POST(request: NextRequest) {
     }
 
     // Get or create session
-    cleanupSessions();
     if (!sessions.has(session_id)) {
       sessions.set(session_id, {
         messages: [],
@@ -73,11 +56,9 @@ export async function POST(request: NextRequest) {
         meterContext: null,
         meterHistory: [],
         lastBuyerMatch: null,
-        lastAccess: Date.now(),
       });
     }
     const session = sessions.get(session_id)!;
-    session.lastAccess = Date.now();
 
     // Generate fresh meter reading using real current time or demo override
     // Auto-fallback to 11 AM during nighttime for realistic demo data
@@ -157,8 +138,69 @@ export async function POST(request: NextRequest) {
             session.messages.push({ role: "assistant", content: fullResponse });
           }
 
-          // If there's surplus, try to detect a trade proposal in the response
-          if (meterContext.surplus_kwh > 0 && !session.activeProposal) {
+          // Detect if this is a buy or sell context from user's original message + AI response
+          const userMsgLower = message.toLowerCase();
+          const responseLower = fullResponse.toLowerCase();
+          const isBuyIntent =
+            userMsgLower.includes("comprar") ||
+            userMsgLower.includes("buy") ||
+            userMsgLower.includes("purchase") ||
+            userMsgLower.includes("necesito energ") ||
+            userMsgLower.includes("need energy") ||
+            (responseLower.includes("compra") && responseLower.includes("autorizo"));
+
+          // BUY PROPOSAL: User wants to purchase energy from a seller
+          if (isBuyIntent && !session.activeProposal) {
+            const hasBuyProposal =
+              responseLower.includes("compra") ||
+              responseLower.includes("purchase") ||
+              responseLower.includes("$") ||
+              responseLower.includes("kwh");
+
+            if (hasBuyProposal) {
+              const kwhToBuy = Math.min(2.5, bestBuyer.demand_kwh || 1.5);
+              const buyPrice = meterContext.suggested_price;
+              const totalUsdc = parseFloat((kwhToBuy * buyPrice).toFixed(4));
+              const feeUsdc = parseFloat((totalUsdc * PROTOCOL_FEE_RATE).toFixed(4));
+              const netUsdc = parseFloat((totalUsdc - feeUsdc).toFixed(4));
+
+              // In buy mode, the "buyer" fields represent the seller the user is buying FROM
+              const proposal: TradeProposal = {
+                id: `prop_buy_${Date.now()}`,
+                prosumerId: bestBuyer.buyer_id, // seller
+                buyerId: DEMO_PROSUMER.id,       // user is the buyer
+                buyerName: bestBuyer.buyer_name,  // seller display name
+                kwhAmount: kwhToBuy,
+                pricePerKwh: buyPrice,
+                totalUsdc,
+                feeUsdc,
+                netUsdc,
+                status: "PENDING",
+                createdAt: new Date().toISOString(),
+                expiresAt: new Date(Date.now() + 10 * 60 * 1000).toISOString(),
+              };
+
+              session.activeProposal = proposal;
+
+              controller.enqueue(
+                new TextEncoder().encode(
+                  encodeSSE({
+                    type: "proposal",
+                    proposal: {
+                      action: "buy",
+                      kwh: proposal.kwhAmount,
+                      price: proposal.pricePerKwh,
+                      buyer: proposal.prosumerId,       // seller id
+                      buyer_name: proposal.buyerName,    // seller name
+                      total_usdc: proposal.totalUsdc,
+                    },
+                  })
+                )
+              );
+            }
+          }
+          // SELL PROPOSAL: If there's surplus, try to detect a sell trade proposal
+          else if (meterContext.surplus_kwh > 0 && !session.activeProposal && !isBuyIntent) {
             // Check if Solei's response contains a trade proposal
             const hasProposal =
               fullResponse.includes("vender") ||

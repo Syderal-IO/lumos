@@ -242,6 +242,7 @@ pub struct CancelTrade<'info> {
 pub struct CollectFee<'info> {
     #[account(mut)]
     pub vault: Account<'info, NexusVault>,
+    /// CHECK: Validated via #[account(signer)] — only the protocol authority can collect fees.
     #[account(signer)]
     pub protocol_wallet: AccountInfo<'info>,
 }

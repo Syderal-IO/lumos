@@ -459,6 +459,22 @@ export function PinIcon(p: IconProps) {
   );
 }
 
+
+/** 🛒 → Pixel Cart (for buy proposals) */
+export function CartIcon(p: IconProps) {
+  return (
+    <PixelSVG {...p}>
+      <rect x="3" y="3" width="10" height="2" />
+      <rect x="2" y="5" width="12" height="2" />
+      <rect x="3" y="7" width="10" height="2" />
+      <rect x="4" y="9" width="8" height="2" />
+      <rect x="4" y="11" width="2" height="2" />
+      <rect x="10" y="11" width="2" height="2" />
+      <rect x="1" y="3" width="2" height="2" />
+    </PixelSVG>
+  );
+}
+
 // ─── SVG String Builders (for Mapbox DOM markers) ───
 
 /**

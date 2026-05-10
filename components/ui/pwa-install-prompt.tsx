@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { SunIcon } from "@/components/ui/pixel-icons";
+import { useTranslation } from "@/lib/i18n";
 
 /**
  * PWA Install Prompt — Always visible on the landing page.
@@ -12,6 +13,7 @@ export default function PwaInstallPrompt() {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [installing, setInstalling] = useState(false);
   const [installed, setInstalled] = useState(false);
+  const { t } = useTranslation();
 
   useEffect(() => {
     // Hide if already installed as standalone
@@ -82,10 +84,10 @@ export default function PwaInstallPrompt() {
         {/* Text */}
         <div className="flex-1 min-w-0">
           <div className="font-pixel text-[11px] font-bold" style={{ color: "var(--foreground)" }}>
-            Instalar Lumos
+            {t("pwa.title" as any)}
           </div>
           <div className="font-pixel text-[8px] mt-0.5" style={{ color: "var(--foreground-secondary)" }}>
-            Acceso directo · Sin tienda · Funciona offline
+            {t("pwa.subtitle" as any)}
           </div>
         </div>
 
@@ -108,7 +110,7 @@ export default function PwaInstallPrompt() {
                 <rect x="4" y="6" width="2" height="2" fill="white" />
                 <rect x="0" y="8" width="10" height="2" fill="white" />
               </svg>
-              Instalar
+              {t("pwa.button" as any)}
             </>
           )}
         </button>

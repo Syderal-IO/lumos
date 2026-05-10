@@ -9,7 +9,7 @@ import ProblemSolution from "@/components/landing/problem-solution";
 import KeyFeatures from "@/components/landing/key-features";
 import MetricsDashboard from "@/components/landing/metrics-dashboard";
 import CodeShowcase from "@/components/landing/code-showcase";
-import IntegrationMesh from "@/components/landing/integration-mesh";
+
 import AsciiShader from "@/components/landing/ascii-shader";
 import TeamSection from "@/components/landing/team-section";
 import Footer from "@/components/landing/footer";
@@ -242,7 +242,7 @@ export default function LandingPage() {
           <ParallaxSection speed={0.05}><MetricsDashboard /></ParallaxSection>
           <ParallaxSection speed={0.02}><CodeShowcase /></ParallaxSection>
           <ParallaxSection speed={0.04}><AsciiShader /></ParallaxSection>
-          <ParallaxSection speed={0.03}><IntegrationMesh /></ParallaxSection>
+
 
           {/* NEW: Team Section */}
           <ParallaxSection speed={0.02}><TeamSection /></ParallaxSection>

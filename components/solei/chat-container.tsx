@@ -54,6 +54,7 @@ export default function ChatContainer() {
   const [txProcessing, setTxProcessing] = useState(false);
   const [txResult, setTxResult] = useState<TxResult | null>(null);
   const [showForecast, setShowForecast] = useState(false);
+  const [proposalAction, setProposalAction] = useState<"sell" | "buy">("sell");
   const { t, lang } = useTranslation();
 
   // Real-time SOL/USD price from Pyth Network
@@ -192,6 +193,7 @@ export default function ChatContainer() {
               }
 
               if (event.type === "proposal" && event.proposal) {
+                setProposalAction(event.proposal.action || "sell");
                 setActiveProposal({
                   id: `prop_${Date.now()}`,
                   prosumerId: DEMO_PROSUMER.id,
@@ -421,6 +423,7 @@ export default function ChatContainer() {
               pricePerKwh={activeProposal.pricePerKwh}
               buyerName={activeProposal.buyerName}
               totalUsdc={activeProposal.totalUsdc}
+              action={proposalAction}
             />
             <ActionButtons
               onAuthorize={handleAuthorize}
