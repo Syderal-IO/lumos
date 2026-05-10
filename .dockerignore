@@ -1,0 +1,39 @@
+# Dependencies
+node_modules
+.pnp
+.pnp.js
+
+# Build output
+.next
+out
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Debug
+npm-debug.log*
+
+# IDE
+.vscode
+.idea
+*.swp
+
+# Git
+.git
+.gitignore
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Contracts (separate build)
+contracts/target
+
+# Intelligence cache
+intelligence/__pycache__
+
+# Misc
+*.md
+LICENSE

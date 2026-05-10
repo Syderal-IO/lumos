@@ -100,7 +100,7 @@ export interface SSEEvent {
   type: SSEEventType;
   content?: string;
   proposal?: {
-    action: "sell";
+    action: "sell" | "buy";
     kwh: number;
     price: number;
     buyer: string;

@@ -1,0 +1,47 @@
+# ═══════════════════════════════════════════════
+# ☀️ Lumos — Docker Compose
+# Intelligence Service + Smart Contract Builder
+# ═══════════════════════════════════════════════
+
+services:
+
+  # ── 🔆 Intelligence (FastAPI + TimesFM + Graphify) ──
+  intelligence:
+    build:
+      context: ./intelligence
+      dockerfile: Dockerfile
+    container_name: lumos-intelligence
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONDONTWRITEBYTECODE=1
+      - PYTHONUNBUFFERED=1
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    networks:
+      - lumos-net
+
+  # ── ⛓️ NexusVault (Anchor Build & Deploy) ──
+  contracts:
+    build:
+      context: ./contracts
+      dockerfile: Dockerfile
+    container_name: lumos-contracts
+    # One-shot build — no restart needed
+    restart: "no"
+    volumes:
+      # Mount Solana keypair for deploy
+      - ${SOLANA_KEYPAIR_PATH:-~/.config/solana}:/root/.config/solana:ro
+    environment:
+      - SOLANA_NETWORK=${SOLANA_NETWORK:-devnet}
+    networks:
+      - lumos-net
+
+networks:
+  lumos-net:
+    driver: bridge
