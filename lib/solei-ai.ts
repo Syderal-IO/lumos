@@ -9,14 +9,23 @@ import type { MeterContext } from "./types";
 
 // ─── Client Configuration (Gemini via OpenAI-compatible endpoint) ───
 
-const client = new OpenAI({
-  apiKey: process.env.GEMINI_API_KEY,
-  baseURL: "https://generativelanguage.googleapis.com/v1beta/openai/",
-});
-
 const MODEL = process.env.GEMINI_MODEL || "gemini-2.0-flash-lite";
 const TEMPERATURE = 0.7;
 const MAX_TOKENS = 2048;
+
+function getOpenAIClient() {
+  const apiKey = process.env.GEMINI_API_KEY || process.env.OPENAI_API_KEY;
+  if (!apiKey) {
+    throw new Error(
+      "Missing credentials for the OpenAI-compatible client. Set GEMINI_API_KEY or OPENAI_API_KEY."
+    );
+  }
+
+  return new OpenAI({
+    apiKey,
+    baseURL: "https://generativelanguage.googleapis.com/v1beta/openai/",
+  });
+}
 
 // ─── System Prompt Builder ───
 
@@ -174,6 +183,7 @@ export async function* createSoleiStream(
     ...messages,
   ];
 
+  const client = getOpenAIClient();
   const stream = await client.chat.completions.create({
     model: MODEL,
     messages: fullMessages,
@@ -206,6 +216,7 @@ export async function chatWithSolei(
     ...messages,
   ];
 
+  const client = getOpenAIClient();
   const response = await client.chat.completions.create({
     model: MODEL,
     messages: fullMessages,
